@@ -38,7 +38,7 @@
                     <img src="/uploads/<%= vouchers[i].thumbnail %>" height="50%" width="50%" alt="">
                 </td>
                 <td>
-                    <form action="/voucher/delete/<%= vouchers[i].id %>?_method=DELETE" style="display: inline-block;" method="POST">
+                    <form action="/voucher/status/<%= vouchers[i].id %>?_method=PUT" style="display: inline-block;" method="POST">
                         <button type="submit" class="btn btn-sm btn-primary">
                             <i class="fas fa-folder"></i> 
                             <% if (vouchers[i].status === 'Y') {  %>
