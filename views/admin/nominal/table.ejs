@@ -17,7 +17,7 @@
                 <td><%= nominals[i].price %></td>
                 <td>
                     <form action="/nominal/delete/<%= nominals[i].id %>?_method=DELETE" method="POST">
-                        <a class="btn btn-info" href="/nominal/edit/<%= nominals[i].id %>">
+                        <a class="btn btn-info" href="/nominal/edit/<%= nominals[i]._id %>">
                              <i class="fas fa-pencil-alt"></i> Ubah 
                         </a>
                         <button type="submit" class="btn btn-danger">

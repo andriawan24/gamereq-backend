@@ -1,0 +1,63 @@
+<table id="example2" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>Nama Game</th>
+            <th>Kategori</th>
+            <th>Nominal</th>
+            <th>Status</th>
+            <th>Gambar</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% for( let i = 0; i < vouchers.length; i++ ) { %>
+            <tr>
+                <td><%= i + 1 %></td>
+                <td><%= vouchers[i].name %></td>
+                <td><%= vouchers[i]?.category?.name ?? '-' %></td>
+                <td>
+                    <% vouchers[i].nominals.forEach( nominal => {  %>
+                        <span class="badge badge-warning">
+                            <%= nominal.coinName %> <%= nominal.coinQuantity %> 
+                        </span>
+                    <% } )  %>
+                </td>
+                <td>
+                    <% if (vouchers[i].status === 'Y') {  %>
+                        <span class="badge badge-success">
+                            Aktif
+                        </span>
+                    <% } else { %>
+                        <span class="badge badge-danger">
+                            Tidak Aktif
+                        </span>
+                    <% } %>
+                </td>
+                <td>
+                    <img src="/uploads/<%= vouchers[i].thumbnail %>" height="50%" width="50%" alt="">
+                </td>
+                <td>
+                    <form action="/voucher/delete/<%= vouchers[i].id %>?_method=DELETE" style="display: inline-block;" method="POST">
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="fas fa-folder"></i> 
+                            <% if (vouchers[i].status === 'Y') {  %>
+                                Matikan
+                            <% } else { %>
+                                Hidupkan
+                            <% } %>
+                        </button>
+                    </form>
+                    <form action="/voucher/delete/<%= vouchers[i].id %>?_method=DELETE" style="display: inline-block;" method="POST">
+                        <a class="btn btn-sm btn-info" href="/voucher/edit/<%= vouchers[i].id %>">
+                             <i class="fas fa-pencil-alt"></i> Ubah 
+                        </a>
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash"></i> Hapus
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        <% } %> 
+    </tfoot>
+</table>
