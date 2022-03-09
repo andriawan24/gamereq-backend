@@ -13,6 +13,6 @@ const bankSchema = mongoose.Schema({
     type: String,
     require: [true, 'Nomor rekening bank harus diisi'],
   },
-});
+}, { timeStamps: true });
 
 module.exports = mongoose.model('Bank', bankSchema);
