@@ -9,4 +9,5 @@ module.exports = {
   urlDb: process.env.MONGO_URL,
   userDb: process.env.MONGO_USER,
   passDb: process.env.MONGO_PASS,
+  jwtKey: process.env.SECRET,
 };
