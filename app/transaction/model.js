@@ -67,6 +67,6 @@ const transactionSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-}, { timeStamps: true });
+}, { timestamps: true });
 
 module.exports = mongoose.model('Transaction', transactionSchema);

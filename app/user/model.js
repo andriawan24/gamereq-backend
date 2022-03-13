@@ -27,6 +27,6 @@ const userSchema = mongoose.Schema({
     type: String,
     require: [true, 'No. Telepon harus diisi'],
   },
-}, { timeStamps: true });
+}, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
