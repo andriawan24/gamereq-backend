@@ -1,9 +1,13 @@
+const path = require('path');
+const fs = require('fs');
 const Voucher = require('../voucher/model');
 const Category = require('../category/model');
 const Nominal = require('../nominal/model');
 const Payment = require('../payment/model');
 const Bank = require('../bank/model');
 const Transaction = require('../transaction/model');
+const Player = require('./model');
+const config = require('../../config');
 
 module.exports = {
   landingPage: async (req, res) => {
@@ -138,6 +142,187 @@ module.exports = {
       });
     } catch (err) {
       return res.status(500).json({
+        message: err.message || 'Internal server error',
+      });
+    }
+  },
+  history: async (req, res) => {
+    try {
+      const { status = '' } = req.query;
+
+      let criteria = {};
+
+      if (status.length) {
+        criteria = {
+          ...criteria,
+          status: { $regex: `${status}`, $options: 'i' },
+        };
+      }
+
+      if (req.player._id) {
+        criteria = {
+          ...criteria,
+          player: req.player._id,
+        };
+      }
+
+      const history = await Transaction.find(criteria);
+
+      const total = await Transaction.aggregate([
+        { $match: criteria },
+        {
+          $group: {
+            _id: null,
+            value: { $sum: '$value' },
+          },
+        },
+      ]);
+
+      return res.status(200).json({
+        data: history,
+        total: total.length ? total[0].value : null,
+      });
+    } catch (err) {
+      return res.status(500).json({
+        message: err.message || 'Internal server error',
+      });
+    }
+  },
+  historyDetail: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const history = await Transaction.findOne({ _id: id });
+
+      if (!history) {
+        return res.status(404).json({
+          message: 'Transaksi tidak ditemukan',
+        });
+      }
+
+      return res.status(200).json({
+        data: history,
+      });
+    } catch (err) {
+      return res.status(500).json({
+        message: err.message || 'Internal server error',
+      });
+    }
+  },
+  dashboard: async (req, res) => {
+    try {
+      const count = await Transaction.aggregate([
+        { $match: { player: req.player._id } },
+        {
+          $group: {
+            _id: '$category',
+            value: { $sum: '$value' },
+          },
+        },
+      ]);
+
+      const category = await Category.find();
+
+      category.forEach((e) => {
+        count.forEach((data) => {
+          if (data._id.toString() === e._id.toString()) {
+            // eslint-disable-next-line no-param-reassign
+            data.name = e.name;
+          }
+        });
+      });
+
+      const history = await Transaction.find({ player: req.player._id })
+        .populate('category')
+        .sort({ updatedAt: -1 });
+
+      return res.status(200).json({
+        data: history,
+        count,
+      });
+    } catch (err) {
+      return res.status(500).json({
+        message: err.message || 'Internal server error',
+      });
+    }
+  },
+  profile: async (req, res) => {
+    try {
+      const player = {
+        id: req.player._id,
+        username: req.player.username,
+        email: req.player.email,
+        name: req.player.name,
+        avatar: req.player.avatar,
+        phone_number: req.player.phoneNumber,
+      };
+      return res.status(200).json({ data: player });
+    } catch (err) {
+      return res.status(500).json({
+        message: err.message || 'Internal server error',
+      });
+    }
+  },
+  editProfile: async (req, res) => {
+    try {
+      const { name = '', phoneNumber = '' } = req.body;
+
+      const payload = {};
+
+      if (name.length) payload.name = name;
+      if (phoneNumber.length) payload.phoneNumber = phoneNumber;
+
+      if (req.file) {
+        const tmpPath = req.file.path;
+        const originalExt = req.file.originalname.split('.')[req.file.originalname.split('.').length - 1];
+        const filename = `${req.file.filename}.${originalExt}`;
+        const targetPath = path.resolve(config.rootPath, `public/uploads/${filename}`);
+
+        const src = fs.createReadStream(tmpPath);
+        const dest = fs.createWriteStream(targetPath);
+
+        src.pipe(dest);
+
+        src.on('end', async () => {
+          const player = await Player.findOne({ _id: req.player.id });
+
+          const currentImage = `${config.rootPath}/public/uploads/${player.avatar}`;
+          if (fs.existsSync(currentImage)) {
+            fs.unlinkSync(currentImage);
+          }
+
+          await Player.findOneAndUpdate({
+            _id: req.player.id,
+          }, {
+            ...payload,
+            avatar: filename,
+          }, { new: true, runValidators: true });
+
+          res.status(201).json({
+            data: {
+              id: player.id,
+              name: player.name,
+              phoneNumber: player.phoneNumber,
+              avatar: player.avatar,
+            },
+          });
+        });
+      } else {
+        const player = await Player.findOneAndUpdate({
+          _id: req.player._id,
+        }, payload, { new: true, runValidators: true });
+
+        res.status(201).json({
+          data: {
+            id: player.id,
+            name: player.name,
+            phoneNumber: player.phoneNumber,
+            avatar: player.avatar,
+          },
+        });
+      }
+    } catch (err) {
+      res.status(500).json({
         message: err.message || 'Internal server error',
       });
     }
