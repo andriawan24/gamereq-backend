@@ -39,8 +39,11 @@ module.exports = {
         });
       }
 
+      const payments = await Payment.find();
+
       return res.status(200).json({
-        data: voucher,
+        detail: voucher,
+        payments,
       });
     } catch (err) {
       return res.status(500).json({
