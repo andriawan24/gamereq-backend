@@ -24,9 +24,7 @@ module.exports = {
         src.on('end', async () => {
           try {
             const player = new Player({ ...payload, avatar: filename });
-
             await player.save();
-
             delete player._doc.password;
 
             res.status(201).json({
@@ -44,19 +42,12 @@ module.exports = {
         });
       } else {
         const player = new Player(payload);
-
         await player.save();
-
         delete player._doc.password;
-
         res.status(201).json({
           data: player,
         });
       }
-
-      res.status(201).json({
-        message: payload,
-      });
     } catch (err) {
       if (err && err.name === 'ValidationError') {
         res.status(422).json({
